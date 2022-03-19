@@ -19,8 +19,8 @@ def register(request):
             print("valid form")
             form.save()
             print("form saved")
-            email = form.cleaned_data.get('email')
-            messages.success(request,f'account created for {email}')
+            username = form.cleaned_data.get('username')
+            messages.success(request,f'account created for {username}')
             return redirect('login')
         else:
             print("invalid form")
@@ -48,12 +48,16 @@ def register(request):
 def login(request):
 
     if request.method == "POST":
+        print(request.POST)
         email = request.POST['email']
         password = request.POST['password']
         user = authenticate(request, email = email, password = password)
+        print(user)
         if user is not None:
             login(request, user)
             return redirect('portfolio')
+        else:
+            messages.info(request, "email or password is incorrect")
 
     return render(request, "correction_detection/login.html")
     # if request.method == "POST":
