@@ -11,6 +11,7 @@ from .models import Stocks
 # Create your views here.
 
 def index(request):
+    print(f"current user: {request.user.id}\n")
     return render(request, "correction_detection/index.html")
 
 def register(request):
@@ -40,6 +41,7 @@ def register(request):
 
 def login(request):
     # is the user is already authenticated then redirect to portfolio
+    print(f"current user: {request.user.id}\n")
     if request.user.is_authenticated:
         return redirect('portfolio')
 
@@ -65,16 +67,35 @@ def logout(request):
 # only allowed to visit this place if the user is logged in 
 @login_required(login_url='login')
 def portfolio(request):
-
+    print(f"current user: {request.user.id}\n")
     if request.method == "POST":
         if "add" in request.POST:
             username = request.user
             context = {"title":"Portfolio", "username":username}
-            user_id = request.user.id
             stock_name = "RELIANCE"
-            # stock = Stocks(name=stock_name, owner_id=user_id)
-            # stock.save()  
-            print(user_id)
+            record = Stocks.objects.filter(name=stock_name, owner_id=request.user.id).values_list().first()
+            if record is not None:
+                print("Stock has already been addded to the watchlist")
+
+            else:
+                stock = Stocks(name=stock_name, owner_id=request.user.id)
+                stock.save()  
+                print(f"added {stock_name} to your watchlist")
+            
+            print(record)
+
+        if "remove" in request.POST:
+            stock_name = "RELIANCE"
+            try:
+                record = Stocks.objects.filter(name=stock_name, owner_id =request.user.id).values()[0]
+                record_id = record['id']
+                Stocks.objects.filter(id=record_id).delete()
+                print(f'deleted {stock_name} from your watchlist')
+
+            except Exception as e:
+                print("You do not have this stock in your watclist")
+            
+            
 
     username = request.user
     context = {"title":"Portfolio", "username":username} 
