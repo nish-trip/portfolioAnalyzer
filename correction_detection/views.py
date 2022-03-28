@@ -72,20 +72,19 @@ def portfolio(request):
         if "add" in request.POST:
             username = request.user
             context = {"title":"Portfolio", "username":username}
-            stock_name = "RELIANCE"
+            stock_name = request.POST["name"]
             record = Stocks.objects.filter(name=stock_name, owner_id=request.user.id).values_list().first()
-            if record is not None:
+            if record is not None: # if the stock is already present 
                 print("Stock has already been addded to the watchlist")
 
-            else:
+            else:# if the stock with that name is not present then we add it to the database
                 stock = Stocks(name=stock_name, owner_id=request.user.id)
                 stock.save()  
                 print(f"added {stock_name} to your watchlist")
             
-            print(record)
 
         if "remove" in request.POST:
-            stock_name = "RELIANCE"
+            stock_name = request.POST["remove_stock"]
             try:
                 record = Stocks.objects.filter(name=stock_name, owner_id =request.user.id).values()[0]
                 record_id = record['id']
@@ -95,8 +94,9 @@ def portfolio(request):
             except Exception as e:
                 print("You do not have this stock in your watclist")
             
-            
-
+    # list of stocks added by the current user
+    stocks_list = [s[0] for s in Stocks.objects.filter(owner_id = request.user.id).values_list('name')]
+    print(stocks_list)
     username = request.user
     context = {"title":"Portfolio", "username":username} 
     return render(request, 'correction_detection/portfolio.html', context)
